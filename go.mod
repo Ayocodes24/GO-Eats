@@ -4,10 +4,12 @@ go 1.24.4
 
 require (
 	github.com/gin-gonic/gin v1.10.1
+	github.com/golang-jwt/jwt/v5 v5.2.3
 	github.com/joho/godotenv v1.5.1
 	github.com/uptrace/bun v1.2.14
 	github.com/uptrace/bun/dialect/pgdialect v1.2.14
 	github.com/uptrace/bun/driver/pgdriver v1.2.14
+	golang.org/x/crypto v0.39.0
 )
 
 require (
@@ -38,7 +40,6 @@ require (
 	go.opentelemetry.io/otel v1.36.0 // indirect
 	go.opentelemetry.io/otel/trace v1.36.0 // indirect
 	golang.org/x/arch v0.8.0 // indirect
-	golang.org/x/crypto v0.39.0 // indirect
 	golang.org/x/net v0.25.0 // indirect
 	golang.org/x/sys v0.33.0 // indirect
 	golang.org/x/text v0.26.0 // indirect

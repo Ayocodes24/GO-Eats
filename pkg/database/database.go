@@ -1,6 +1,7 @@
 package database
 
 import (
+	"GO-Eats/pkg/database/models/user"
 	"context"
 	"database/sql"
 	"fmt"
@@ -9,12 +10,11 @@ import (
 	"github.com/uptrace/bun/driver/pgdriver"
 	"log"
 	"os"
-	"os/user"
 	"strconv"
 	"time"
 )
 
-'These are all method calls , which can be directly accessed by any or all services'
+// These are all method calls , which can be directly accessed by any or all services
 type Database interface {
 	Insert(ctx context.Context, model any) (sql.Result, error)
 	Delete(ctx context.Context, tableName string, filter Filter) (sql.Result, error)
@@ -34,7 +34,7 @@ type Filter map[string]any
 
 type DB struct {
 	db *bun.DB
-} 'INITIALIZING A GLOBAL INSTANCE HERE'
+} //INITIALIZING A GLOBAL INSTANCE HERE
 
 func New() Database {
 	dbHost := os.Getenv("DB_HOST")
