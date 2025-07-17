@@ -1,6 +1,9 @@
 package cart
 
-import "context"
+import (
+	"context"
+	"github.com/Ayocodes24/GO-Eats/pkg/database/models/cart"
+)
 
 type Cart interface {
 	Create(ctx context.Context, cart *cart.Cart) (*cart.Cart, error)

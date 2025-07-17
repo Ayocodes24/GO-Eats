@@ -5,10 +5,12 @@ import (
 	"github.com/Ayocodes24/GO-Eats/pkg/abstract/config"
 	"github.com/Ayocodes24/GO-Eats/pkg/database"
 	crt "github.com/Ayocodes24/GO-Eats/pkg/handler/cart"
+	delv "github.com/Ayocodes24/GO-Eats/pkg/handler/delivery"
 	"github.com/Ayocodes24/GO-Eats/pkg/handler/restaurant"
 	revw "github.com/Ayocodes24/GO-Eats/pkg/handler/review"
 	"github.com/Ayocodes24/GO-Eats/pkg/handler/user"
 	"github.com/Ayocodes24/GO-Eats/pkg/service/cart_order"
+	"github.com/Ayocodes24/GO-Eats/pkg/service/delivery"
 	restro "github.com/Ayocodes24/GO-Eats/pkg/service/restaurant"
 	"github.com/Ayocodes24/GO-Eats/pkg/service/review"
 	usr "github.com/Ayocodes24/GO-Eats/pkg/service/user"
@@ -58,5 +60,10 @@ func main() {
 	// Delivery
 	deliveryService := delivery.NewDeliveryService(db, env, natServer)
 	delv.NewDeliveryHandler(s, "/delivery", deliveryService, middlewares, validate)
+
+	// Events/Announcements
+	announceService := announcements.NewAnnouncementService(db, env)
+	annoucements.NewAnnouncementHandler(s, "/announcements", announceService, middlewares, validate)
+	log.Fatal(s.Run())
 
 }

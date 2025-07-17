@@ -1,6 +1,9 @@
 package cart_order
 
-import "context"
+import (
+	"context"
+	"github.com/Ayocodes24/GO-Eats/pkg/database/models/delivery"
+)
 
 func (cartSrv *CartService) DeliveryInformation(ctx context.Context, orderId int64, userId int64) (*[]delivery.DeliveryListResponse, error) {
 	var deliveryList []delivery.DeliveryListResponse

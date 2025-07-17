@@ -1,8 +1,10 @@
 package cart_order
 
 import (
+	"context"
 	"errors"
 	"github.com/Ayocodes24/GO-Eats/pkg/database"
+	"github.com/Ayocodes24/GO-Eats/pkg/database/models/order"
 )
 
 func (cartSrv *CartService) OrderList(ctx context.Context, userId int64) (*[]order.Order, error) {

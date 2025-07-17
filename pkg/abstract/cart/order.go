@@ -3,6 +3,7 @@ package cart
 import (
 	"context"
 	"github.com/Ayocodes24/GO-Eats/pkg/database/models/delivery"
+	"github.com/Ayocodes24/GO-Eats/pkg/database/models/order"
 )
 
 type Order interface {

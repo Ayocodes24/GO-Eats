@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/Ayocodes24/GO-Eats/pkg/database"
 	"github.com/Ayocodes24/GO-Eats/pkg/database/models/delivery"
+	"github.com/Ayocodes24/GO-Eats/pkg/database/models/order"
 	"time"
 )
 

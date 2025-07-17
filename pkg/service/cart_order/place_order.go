@@ -4,8 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/Ayocodes24/GO-Eats/pkg/abstract/cart"
 	"github.com/Ayocodes24/GO-Eats/pkg/database"
+	"github.com/Ayocodes24/GO-Eats/pkg/database/models/cart"
+	"github.com/Ayocodes24/GO-Eats/pkg/database/models/order"
 )
 
 func (cartSrv *CartService) PlaceOrder(ctx context.Context, cartId int64, userId int64) (*order.Order, error) {

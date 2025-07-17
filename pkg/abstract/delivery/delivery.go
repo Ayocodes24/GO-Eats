@@ -1,6 +1,9 @@
 package delivery
 
-import "github.com/Ayocodes24/GO-Eats/pkg/database/models/delivery"
+import (
+	"context"
+	"github.com/Ayocodes24/GO-Eats/pkg/database/models/delivery"
+)
 
 type DeliveryPerson interface {
 	AddDeliveryPerson(ctx context.Context, deliveryPerson *delivery.DeliveryPerson) (bool, error)

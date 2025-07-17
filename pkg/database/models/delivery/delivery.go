@@ -1,6 +1,7 @@
 package delivery
 
 import (
+	"github.com/Ayocodes24/GO-Eats/pkg/database/models/order"
 	"github.com/Ayocodes24/GO-Eats/pkg/database/models/utils"
 	"github.com/uptrace/bun"
 	"time"

@@ -1,27 +1,27 @@
-package delivery
+package announcements
 
 import (
 	"github.com/Ayocodes24/GO-Eats/pkg/handler"
-	"github.com/Ayocodes24/GO-Eats/pkg/service/delivery"
+	"github.com/Ayocodes24/GO-Eats/pkg/service/announcements"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 )
 
-type DeliveryHandler struct {
+type AnnouncementHandler struct {
 	serve             *handler.Server
 	group             string
 	middlewareGuarded gin.IRoutes
 	router            gin.IRoutes
-	service           *delivery.DeliveryService
+	service           *announcements.AnnouncementService
 	middleware        []gin.HandlerFunc
 	validate          *validator.Validate
 }
 
-func NewDeliveryHandler(s *handler.Server, group string,
-	service *delivery.DeliveryService, middleware []gin.HandlerFunc,
+func NewAnnouncementHandler(s *handler.Server, group string,
+	service *announcements.AnnouncementService, middleware []gin.HandlerFunc,
 	validate *validator.Validate) {
 
-	cartHandler := &DeliveryHandler{
+	cartHandler := &AnnouncementHandler{
 		s,
 		group,
 		nil,
@@ -37,6 +37,6 @@ func NewDeliveryHandler(s *handler.Server, group string,
 	cartHandler.registerValidator()
 }
 
-func (s *DeliveryHandler) registerValidator() {
+func (s *AnnouncementHandler) registerValidator() {
 
 }
