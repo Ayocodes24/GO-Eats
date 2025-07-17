@@ -4,7 +4,9 @@ import (
 	"github.com/Ayocodes24/GO-Eats/cmd/api/middleware"
 	"github.com/Ayocodes24/GO-Eats/pkg/abstract/config"
 	"github.com/Ayocodes24/GO-Eats/pkg/database"
+	"github.com/Ayocodes24/GO-Eats/pkg/handler/restaurant"
 	"github.com/Ayocodes24/GO-Eats/pkg/handler/user"
+	"github.com/Ayocodes24/GO-Eats/pkg/service/review"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/joho/godotenv"
@@ -35,4 +37,13 @@ func main() {
 	// User
 	userService := usr.NewUserService(db, env)
 	user.NewUserHandler(s, "/user", userService, validate)
+
+	// Reviews
+	reviewService := review.NewReviewService(db, env)
+	revw.NewReviewProtectedHandler(s, "/review", reviewService, middlewares, validate)
+
+	// Restaurant
+	restaurantService := restro.NewRestaurantService(db, env)
+	restaurant.NewRestaurantHandler(s, "/restaurant", restaurantService)
+
 }
