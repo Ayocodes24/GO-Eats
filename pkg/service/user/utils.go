@@ -1,6 +1,7 @@
 package user
 
 import (
+	"context"
 	"errors"
 	"github.com/Ayocodes24/GO-Eats/pkg/database/models/user"
 )
