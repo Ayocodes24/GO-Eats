@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/Ayocodes24/GO-Eats/pkg/database"
 	"github.com/Ayocodes24/GO-Eats/pkg/database/models/restaurant"
+	"github.com/Ayocodes24/GO-Eats/pkg/service/restaurant/unsplash"
 	"log/slog"
 	"net/http"
 	"os"

@@ -4,6 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/Ayocodes24/GO-Eats/pkg/database/models/cart"
+	"github.com/Ayocodes24/GO-Eats/pkg/database/models/delivery"
+	"github.com/Ayocodes24/GO-Eats/pkg/database/models/order"
+	"github.com/Ayocodes24/GO-Eats/pkg/database/models/restaurant"
+	"github.com/Ayocodes24/GO-Eats/pkg/database/models/review"
 	"github.com/Ayocodes24/GO-Eats/pkg/database/models/user"
 	"github.com/uptrace/bun"
 	"github.com/uptrace/bun/dialect/pgdialect"
@@ -34,11 +39,11 @@ type Database interface {
 	Close() error
 }
 
-type Filter map[string]any //maps the actual column names to their values
+type Filter map[string]any
 
 type DB struct {
 	db *bun.DB
-} //INITIALIZING A GLOBAL INSTANCE HERE
+}
 
 func (d *DB) Insert(ctx context.Context, model any) (sql.Result, error) {
 	result, err := d.db.NewInsert().Model(model).Exec(ctx)
@@ -48,9 +53,6 @@ func (d *DB) Insert(ctx context.Context, model any) (sql.Result, error) {
 	return result, nil
 }
 
-//set filter becomes the SET Clause like SET "name"=alice
-//Condition filter becomes the condition clause like SET "name"=alice WHERE id="2
-
 func (d *DB) Update(ctx context.Context, tableName string, Set Filter, Condition Filter) (sql.Result, error) {
 	result, err := d.db.NewUpdate().Table(tableName).Set(d.whereCondition(Set, "SET")).Where(d.whereCondition(Condition, "AND")).Exec(ctx)
 	if err != nil {
@@ -59,12 +61,32 @@ func (d *DB) Update(ctx context.Context, tableName string, Set Filter, Condition
 	return result, nil
 }
 
-//.Scan(ctx, model) Executes the SQL:
-//SELECT * FROM users;
+func (d *DB) Delete(ctx context.Context, tableName string, filter Filter) (sql.Result, error) {
+	result, err := d.db.NewDelete().Table(tableName).Where(d.whereCondition(filter, "AND")).Exec(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return result, err
+}
 
 func (d *DB) Select(ctx context.Context, model any, columnName string, parameter any) error {
 	err := d.db.NewSelect().Model(model).Where(fmt.Sprintf("%s = ?", columnName), parameter).Scan(ctx)
 	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (d *DB) SelectWithMultipleFilter(ctx context.Context, model any, Condition Filter) error {
+	err := d.db.NewSelect().Model(model).Where(d.whereCondition(Condition, "AND")).Scan(ctx)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (d *DB) SelectAll(ctx context.Context, tableName string, model any) error {
+	if err := d.db.NewSelect().Table(tableName).Scan(ctx, model); err != nil {
 		return err
 	}
 	return nil
@@ -84,24 +106,6 @@ func (d *DB) SelectWithRelation(ctx context.Context, model any, relations []stri
 	return nil
 }
 
-//this becomes an SQL WHERE CLAUSE with multiple condition checking
-
-func (d *DB) SelectWithMultipleFilter(ctx context.Context, model any, Condition Filter) error {
-	err := d.db.NewSelect().Model(model).Where(d.whereCondition(Condition, "AND")).Scan(ctx)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (d *DB) SelectAll(ctx context.Context, tableName string, model any) error {
-	if err := d.db.NewSelect().Table(tableName).Scan(ctx, model); err != nil {
-		return err
-	}
-	return nil
-}
-
-// helps us run any other query , other than our CRUD OPERATIONS
 func (d *DB) Raw(ctx context.Context, model any, query string, args ...interface{}) error {
 	if err := d.db.NewRaw(query, args...).Scan(ctx, model); err != nil {
 		return err

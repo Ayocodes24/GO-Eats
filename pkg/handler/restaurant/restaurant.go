@@ -4,6 +4,7 @@ import (
 	"context"
 	restaurantModel "github.com/Ayocodes24/GO-Eats/pkg/database/models/restaurant"
 	"github.com/gin-gonic/gin"
+	"log/slog"
 	"net/http"
 	"os"
 	"path/filepath"

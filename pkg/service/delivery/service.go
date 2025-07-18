@@ -1,6 +1,9 @@
 package delivery
 
-import "github.com/Ayocodes24/GO-Eats/pkg/database"
+import (
+	"github.com/Ayocodes24/GO-Eats/pkg/database"
+	"github.com/Ayocodes24/GO-Eats/pkg/nats"
+)
 
 type DeliveryService struct {
 	db   database.Database

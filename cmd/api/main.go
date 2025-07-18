@@ -77,7 +77,6 @@ func main() {
 	// Events/Announcements
 	announceService := announcements.NewAnnouncementService(db, env)
 	annoucements.NewAnnouncementHandler(s, "/announcements", announceService, middlewares, validate)
-	log.Fatal(s.Run())
 
 	// Notification
 	notifyService := notification.NewNotificationService(db, env, natServer)
@@ -87,5 +86,11 @@ func main() {
 	_ = notifyService.SubscribeOrderStatus(wsClients)
 
 	notify.NewNotifyHandler(s, "/notify", notifyService, middlewares, validate, wsClients)
+
+	s.Gin.GET("/healthz", func(c *gin.Context) {
+		c.JSON(200, gin.H{"status": "ok"})
+	})
+
+	log.Fatal(s.Run())
 
 }

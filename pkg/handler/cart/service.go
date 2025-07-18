@@ -2,6 +2,7 @@ package cart
 
 import (
 	"github.com/Ayocodes24/GO-Eats/pkg/handler"
+	"github.com/Ayocodes24/GO-Eats/pkg/service/cart_order"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 )

@@ -2,7 +2,7 @@ package cart_order
 
 import (
 	"context"
-	"github.com/Ayocodes24/GO-Eats/pkg/abstract/cart"
+	"github.com/Ayocodes24/GO-Eats/pkg/database/models/cart"
 )
 
 func (cartSrv *CartService) AddItem(ctx context.Context, Item *cart.CartItems) (*cart.CartItems, error) {

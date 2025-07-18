@@ -2,10 +2,10 @@ package cart_order
 
 import (
 	"context"
-	"github.com/Ayocodes24/GO-Eats/pkg/abstract/cart"
+	cartModel "github.com/Ayocodes24/GO-Eats/pkg/database/models/cart"
 )
 
-func (cartSrv *CartService) Create(ctx context.Context, cart *cart.Cart) (*cart.Cart, error) {
+func (cartSrv *CartService) Create(ctx context.Context, cart *cartModel.Cart) (*cartModel.Cart, error) {
 	_, err := cartSrv.db.Insert(ctx, cart)
 	if err != nil {
 		return nil, err

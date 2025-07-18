@@ -2,7 +2,7 @@ package cart
 
 import (
 	"context"
-	"github.com/Ayocodes24/GO-Eats/pkg/abstract/cart"
+	cartModel "github.com/Ayocodes24/GO-Eats/pkg/database/models/cart"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
@@ -21,7 +21,7 @@ func (s *CartHandler) addToCart(c *gin.Context) {
 	cartInfo, err := s.service.GetCartId(ctx, userID)
 	if err != nil {
 		// Create a new cart.
-		var cartData cart.Cart
+		var cartData cartModel.Cart
 		cartData.UserID = userID
 
 		newCart, err := s.service.Create(ctx, &cartData)
@@ -34,7 +34,7 @@ func (s *CartHandler) addToCart(c *gin.Context) {
 		cartID = cartInfo.CartID
 	}
 
-	var cartItemParam cart.CartItemParams
+	var cartItemParam cartModel.CartItemParams
 	cartItemParam.CartID = cartID
 
 	if err := c.BindJSON(&cartItemParam); err != nil {
@@ -42,7 +42,7 @@ func (s *CartHandler) addToCart(c *gin.Context) {
 		return
 	}
 
-	cartItem := &cart.CartItems{
+	cartItem := &cartModel.CartItems{
 		CartID:       cartItemParam.CartID,
 		ItemID:       cartItemParam.ItemID,
 		RestaurantID: cartItemParam.RestaurantID,
@@ -64,6 +64,7 @@ func (s *CartHandler) getItems(c *gin.Context) {
 	defer cancel()
 
 	userID := c.GetInt64("userID")
+
 	cartInfo, err := s.service.GetCartId(ctx, userID)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

@@ -2,11 +2,11 @@ package cart_order
 
 import (
 	"context"
-	"github.com/Ayocodes24/GO-Eats/pkg/abstract/cart"
+	cartModel "github.com/Ayocodes24/GO-Eats/pkg/database/models/cart"
 )
 
-func (cartSrv *CartService) GetCartId(ctx context.Context, UserId int64) (*cart.Cart, error) {
-	var cartInfo cart.Cart
+func (cartSrv *CartService) GetCartId(ctx context.Context, UserId int64) (*cartModel.Cart, error) {
+	var cartInfo cartModel.Cart
 
 	err := cartSrv.db.Select(ctx, &cartInfo, "user_id", UserId)
 	if err != nil {

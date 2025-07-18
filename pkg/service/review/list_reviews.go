@@ -1,5 +1,10 @@
 package review
 
+import (
+	"context"
+	"github.com/Ayocodes24/GO-Eats/pkg/database/models/review"
+)
+
 func (revSrv *ReviewService) ListReviews(ctx context.Context, restaurantId int64) ([]review.Review, error) {
 	var reviewList []review.Review
 
