@@ -2,9 +2,11 @@ package handler
 
 import (
 	"github.com/Ayocodes24/GO-Eats/pkg/database"
+	"github.com/Ayocodes24/GO-Eats/pkg/storage"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	sloggin "github.com/samber/slog-gin"
 	"log/slog"
-	"modernc.org/fileutil/storage"
 	"os"
 )
 

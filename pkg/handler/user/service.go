@@ -1,8 +1,9 @@
 package user
 
 import (
-	userValidate "github.com/Ayocodes24/GO-Eats/pkg/database/models/user"
-	"github.com/Ayocodes24/GO-Eats/pkg/service/user"
+	userModel "github.com/Ayocodes24/GO-Eats/pkg/database/models/user"
+	"github.com/Ayocodes24/GO-Eats/pkg/handler"
+	userService "github.com/Ayocodes24/GO-Eats/pkg/service/user"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 )
@@ -11,25 +12,30 @@ type UserHandler struct {
 	Serve    *handler.Server
 	group    string
 	router   *gin.RouterGroup
-	service  *user.UsrService
+	service  *userService.UsrService
 	validate *validator.Validate
 }
 
-func NewUserHandler(s *handler.Server, groupName string, service *user.UsrService, validate *validator.Validate) {
-
-	usrHandler := &UserHandler{
-		s,
-		groupName,
-		&gin.RouterGroup{},
-		service,
-		validate,
+func NewUserHandler(
+	s *handler.Server,
+	groupName string,
+	service *userService.UsrService,
+	validate *validator.Validate,
+) *UserHandler {
+	h := &UserHandler{
+		Serve:    s,
+		group:    groupName,
+		router:   &gin.RouterGroup{},
+		service:  service,
+		validate: validate,
 	}
-	usrHandler.router = usrHandler.registerGroup()
-	usrHandler.routes()
-	usrHandler.registerValidator()
+	h.router = h.registerGroup()
+	h.routes()
+	h.registerValidator()
+	return h
 }
 
 func (s *UserHandler) registerValidator() {
-	_ = s.validate.RegisterValidation("name", userValidate.NameValidator)
-	_ = s.validate.RegisterValidation("email", userValidate.EmailValidator)
+	_ = s.validate.RegisterValidation("name", userModel.NameValidator)
+	_ = s.validate.RegisterValidation("email", userModel.EmailValidator)
 }
