@@ -24,6 +24,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/joho/godotenv"
 	"log"
+	"log/slog"
 	"os"
 )
 
@@ -49,6 +50,9 @@ func main() {
 		natsURL = "nats://127.0.0.1:4222"
 	}
 	natServer, err := nats.NewNATS(natsURL)
+	if err != nil {
+		slog.Warn("NATS unavailable — notifications disabled", "url", natsURL, "error", err)
+	}
 
 	// WebSocket Clients (thread-safe registry)
 	wsClients := wsclients.NewRegistry()

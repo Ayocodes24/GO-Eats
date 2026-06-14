@@ -4,10 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
+	"time"
+
 	"github.com/Ayocodes24/GO-Eats/pkg/database"
 	"github.com/Ayocodes24/GO-Eats/pkg/database/models/delivery"
 	"github.com/Ayocodes24/GO-Eats/pkg/database/models/order"
-	"time"
 )
 
 func (deliverSrv *DeliveryService) updateOrderStatus(ctx context.Context, orderID int64, status string) error {
@@ -73,10 +75,9 @@ func (deliverSrv *DeliveryService) OrderPlacement(ctx context.Context,
 		if err != nil {
 			return false, err
 		}
-		// Notify User.
-		err = deliverSrv.notifyDeliveryStatusToUser(&orderInfo, deliveryStatus)
-		if err != nil {
-			return false, err
+		// Notify User (non-critical: NATS may be unavailable).
+		if err = deliverSrv.notifyDeliveryStatusToUser(&orderInfo, deliveryStatus); err != nil {
+			slog.Warn("delivery status notification failed", "order_id", orderID, "error", err)
 		}
 		return true, nil
 	default:

@@ -1,6 +1,7 @@
 package nats
 
 import (
+	"errors"
 	"log"
 	"log/slog"
 	"strings"
@@ -14,23 +15,27 @@ type NATS struct {
 	Conn *nats.Conn
 }
 
+var errNATSUnavailable = errors.New("NATS not connected")
+
 func NewNATS(url string) (*NATS, error) {
 	nc, err := nats.Connect(url, nats.Name("food-delivery-nats"))
 	if err != nil {
-		log.Fatalf("Error connecting to NATS:: %s", err)
+		return nil, err
 	}
-	return &NATS{Conn: nc}, err
+	return &NATS{Conn: nc}, nil
 }
 
 func (n *NATS) Pub(topic string, message []byte) error {
-	err := n.Conn.Publish(topic, message)
-	if err != nil {
-		return err
+	if n == nil || n.Conn == nil {
+		return errNATSUnavailable
 	}
-	return nil
+	return n.Conn.Publish(topic, message)
 }
 
 func (n *NATS) Sub(topic string, clients *wsclients.Registry) error {
+	if n == nil || n.Conn == nil {
+		return errNATSUnavailable
+	}
 	_, err := n.Conn.Subscribe(topic, func(msg *nats.Msg) {
 		message := string(msg.Data)
 		slog.Info("MESSAGE_REPLY_FROM_NATS", "RECEIVED_MESSAGE", message)
