@@ -34,7 +34,10 @@ func TestGetUnSplashImageURL(t *testing.T) {
 		},
 	}
 
-	imageURL := unsplash.GetUnSplashImageURL(mockClient, "test")
+	imageURL, err := unsplash.GetUnSplashImageURL(mockClient, "test")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 	expectedURL := "https://example.com/image.jpg"
 	if imageURL != expectedURL {
 		t.Fatalf("expected %s, got %s", expectedURL, imageURL)

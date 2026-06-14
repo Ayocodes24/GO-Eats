@@ -248,14 +248,108 @@ func TestCart(t *testing.T) {
 	})
 
 	t.Run("Cart::PlaceOrder", func(t *testing.T) {
-		req, _ := http.NewRequest(http.MethodPost, "/cart/order/new", nil)
+		body := strings.NewReader(`{"delivery_address": "123 Test Street, Bengaluru"}`)
+		req, _ := http.NewRequest(http.MethodPost, "/cart/order/new", body)
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("Authorization", Token)
 
 		w := httptest.NewRecorder()
 		testServer.Gin.ServeHTTP(w, req)
 		assert.Equal(t, http.StatusCreated, w.Code)
+	})
 
+	t.Cleanup(func() {
+		tests.Teardown(testDB)
+	})
+}
+
+// TestCartOrderWithoutNATS verifies that order placement succeeds even when
+// NATS is unavailable (nil), demonstrating graceful degradation.
+func TestCartOrderWithoutNATS(t *testing.T) {
+	t.Setenv("APP_ENV", "TEST")
+	t.Setenv("STORAGE_TYPE", "local")
+	t.Setenv("STORAGE_DIRECTORY", "uploads")
+	t.Setenv("LOCAL_STORAGE_PATH", "./tmp")
+	t.Setenv("GIN_MODE", "release")
+
+	testDB := tests.Setup()
+	AppEnv := os.Getenv("APP_ENV")
+	testServer := handler.NewServer(testDB, false)
+	validate := validator.New()
+	middlewares := []gin.HandlerFunc{middleware.AuthMiddleware()}
+
+	userService := usr.NewUserService(testDB, AppEnv)
+	user.NewUserHandler(testServer, "/user", userService, validate)
+
+	restaurantService := restro.NewRestaurantService(testDB, AppEnv)
+	restaurant.NewRestaurantHandler(testServer, "/restaurant", restaurantService)
+
+	// Pass nil NATS — the app must still work
+	cartService := cart_order.NewCartService(testDB, AppEnv, nil)
+	crt.NewCartHandler(testServer, "/cart", cartService, middlewares, validate)
+
+	ctx := context.Background()
+
+	var userInfo userModel.User
+	userInfo.Email = "natsless@test.com"
+	userInfo.Password = "password123"
+	_, err := userService.Add(ctx, &userInfo)
+	if err != nil {
+		t.Fatal(err)
+	}
+	loginToken, err := userService.Login(ctx, userInfo.ID, "Food Delivery")
+	if err != nil {
+		t.Fatal(err)
+	}
+	token := fmt.Sprintf("Bearer %s", loginToken)
+
+	form := common.FakeRestaurant{
+		Name:        "Test Restaurant",
+		File:        []byte{10, 10, 10},
+		Description: "desc",
+		Address:     "addr",
+		City:        "city",
+		State:       "state",
+	}
+	body, contentType, err := common.GenerateData(form)
+	if err != nil {
+		t.Fatal(err)
+	}
+	req, _ := http.NewRequest(http.MethodPost, "/restaurant/", body)
+	req.Header.Set("Content-Type", contentType)
+	w := httptest.NewRecorder()
+	testServer.Gin.ServeHTTP(w, req)
+	if !assert.Equal(t, http.StatusCreated, w.Code) {
+		t.FailNow()
+	}
+
+	menuPayload := `{"restaurant_id":1,"name":"burger","description":"a burger","price":50.0,"category":"FAST_FOODS","available":true}`
+	req, _ = http.NewRequest(http.MethodPost, "/restaurant/menu", strings.NewReader(menuPayload))
+	req.Header.Set("Content-Type", "application/json")
+	w = httptest.NewRecorder()
+	testServer.Gin.ServeHTTP(w, req)
+	if !assert.Equal(t, http.StatusCreated, w.Code) {
+		t.FailNow()
+	}
+
+	cartPayload := `{"item_id":1,"restaurant_id":1,"quantity":1}`
+	req, _ = http.NewRequest(http.MethodPost, "/cart/add", strings.NewReader(cartPayload))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", token)
+	w = httptest.NewRecorder()
+	testServer.Gin.ServeHTTP(w, req)
+	if !assert.Equal(t, http.StatusCreated, w.Code) {
+		t.FailNow()
+	}
+
+	t.Run("Cart::PlaceOrder::NoNATS", func(t *testing.T) {
+		body := strings.NewReader(`{"delivery_address": "456 NATS-free Lane"}`)
+		req, _ := http.NewRequest(http.MethodPost, "/cart/order/new", body)
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Authorization", token)
+		w := httptest.NewRecorder()
+		testServer.Gin.ServeHTTP(w, req)
+		assert.Equal(t, http.StatusCreated, w.Code)
 	})
 
 	t.Cleanup(func() {
