@@ -32,14 +32,14 @@ func (s *NotifyHandler) notifyOrders(c *gin.Context) {
 
 	userID := strconv.FormatInt(userIdInt, 10)
 
-	s.clients[userID] = conn
+	s.clients.Set(userID, conn)
 	log.Printf("New client connected::%s", userID)
 
 	for {
 		_, _, err := conn.ReadMessage()
 		if err != nil {
 			log.Printf("Client disconnected: %s::%v", userID, err)
-			delete(s.clients, userID)
+			s.clients.Delete(userID)
 			break
 		}
 	}

@@ -12,6 +12,7 @@ import (
 	revw "github.com/Ayocodes24/GO-Eats/pkg/handler/review"
 	"github.com/Ayocodes24/GO-Eats/pkg/handler/user"
 	"github.com/Ayocodes24/GO-Eats/pkg/nats"
+	"github.com/Ayocodes24/GO-Eats/pkg/wsclients"
 	"github.com/Ayocodes24/GO-Eats/pkg/service/announcements"
 	"github.com/Ayocodes24/GO-Eats/pkg/service/cart_order"
 	"github.com/Ayocodes24/GO-Eats/pkg/service/delivery"
@@ -21,7 +22,6 @@ import (
 	usr "github.com/Ayocodes24/GO-Eats/pkg/service/user"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
-	"github.com/gorilla/websocket"
 	"github.com/joho/godotenv"
 	"log"
 	"os"
@@ -50,8 +50,8 @@ func main() {
 	}
 	natServer, err := nats.NewNATS(natsURL)
 
-	// WebSocket Clients
-	wsClients := make(map[string]*websocket.Conn)
+	// WebSocket Clients (thread-safe registry)
+	wsClients := wsclients.NewRegistry()
 
 	s := handler.NewServer(db, true)
 

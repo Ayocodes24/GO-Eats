@@ -1,10 +1,11 @@
 package notification
 
 import (
+	"log/slog"
+
 	"github.com/Ayocodes24/GO-Eats/pkg/database"
 	"github.com/Ayocodes24/GO-Eats/pkg/nats"
-	"github.com/gorilla/websocket"
-	"log/slog"
+	"github.com/Ayocodes24/GO-Eats/pkg/wsclients"
 )
 
 type NotificationService struct {
@@ -17,21 +18,12 @@ func NewNotificationService(db database.Database, env string, nats *nats.NATS) *
 	return &NotificationService{db, env, nats}
 }
 
-func (s *NotificationService) SubscribeNewOrders(clients map[string]*websocket.Conn) error {
+func (s *NotificationService) SubscribeNewOrders(clients *wsclients.Registry) error {
 	slog.Info("Listening to ==> NotificationService::SubscribeNewOrders")
-
-	err := s.nats.Sub("orders.new.*", clients)
-	if err != nil {
-		return err
-	}
-	return nil
+	return s.nats.Sub("orders.new.*", clients)
 }
 
-func (s *NotificationService) SubscribeOrderStatus(clients map[string]*websocket.Conn) error {
+func (s *NotificationService) SubscribeOrderStatus(clients *wsclients.Registry) error {
 	slog.Info("Listening to ==> NotificationService::SubscribeOrderStatus")
-	err := s.nats.Sub("orders.status.*", clients)
-	if err != nil {
-		return err
-	}
-	return nil
+	return s.nats.Sub("orders.status.*", clients)
 }

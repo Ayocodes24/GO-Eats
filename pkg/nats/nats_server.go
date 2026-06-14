@@ -1,11 +1,13 @@
 package nats
 
 import (
-	"github.com/gorilla/websocket"
-	"github.com/nats-io/nats.go"
 	"log"
 	"log/slog"
 	"strings"
+
+	"github.com/Ayocodes24/GO-Eats/pkg/wsclients"
+	"github.com/gorilla/websocket"
+	"github.com/nats-io/nats.go"
 )
 
 type NATS struct {
@@ -28,18 +30,16 @@ func (n *NATS) Pub(topic string, message []byte) error {
 	return nil
 }
 
-func (n *NATS) Sub(topic string, clients map[string]*websocket.Conn) error {
-
+func (n *NATS) Sub(topic string, clients *wsclients.Registry) error {
 	_, err := n.Conn.Subscribe(topic, func(msg *nats.Msg) {
 		message := string(msg.Data)
 		slog.Info("MESSAGE_REPLY_FROM_NATS", "RECEIVED_MESSAGE", message)
 		userId, messageData := n.formatMessage(message)
-		if conn, ok := clients[userId]; ok {
-			err := conn.WriteMessage(websocket.TextMessage, []byte(messageData))
-			if err != nil {
+		if conn, ok := clients.Get(userId); ok {
+			if err := conn.WriteMessage(websocket.TextMessage, []byte(messageData)); err != nil {
 				log.Println("Error sending message to client:", err)
 				conn.Close()
-				delete(clients, userId)
+				clients.Delete(userId)
 			}
 		}
 	})

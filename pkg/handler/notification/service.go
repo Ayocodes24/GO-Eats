@@ -1,12 +1,14 @@
 package notification
 
 import (
+	"net/http"
+
 	"github.com/Ayocodes24/GO-Eats/pkg/handler"
 	"github.com/Ayocodes24/GO-Eats/pkg/service/notification"
+	"github.com/Ayocodes24/GO-Eats/pkg/wsclients"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/websocket"
-	"net/http"
 )
 
 type NotifyHandler struct {
@@ -18,38 +20,33 @@ type NotifyHandler struct {
 	middleware        []gin.HandlerFunc
 	validate          *validator.Validate
 	ws                *websocket.Upgrader
-	clients           map[string]*websocket.Conn
+	clients           *wsclients.Registry
 }
 
 func NewNotifyHandler(s *handler.Server, group string,
 	service *notification.NotificationService, middleware []gin.HandlerFunc,
-	validate *validator.Validate, clients map[string]*websocket.Conn) {
+	validate *validator.Validate, clients *wsclients.Registry) {
 
-	// WebSocket
 	var ws = &websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool {
 			return true
 		},
 	}
 
-	cartHandler := &NotifyHandler{
-		s,
-		group,
-		nil,
-		nil,
-		service,
-		middleware,
-		validate,
-		ws,
-		clients,
+	notifyHandler := &NotifyHandler{
+		serve:             s,
+		group:             group,
+		service:           service,
+		middleware:        middleware,
+		validate:          validate,
+		ws:                ws,
+		clients:           clients,
 	}
-	cartHandler.middlewareGuarded = cartHandler.registerMiddlewareGroup(middleware...)
-	cartHandler.router = cartHandler.registerGroup()
-	cartHandler.regularRoutes()
-	cartHandler.middlewareRoutes()
-	cartHandler.registerValidator()
+	notifyHandler.middlewareGuarded = notifyHandler.registerMiddlewareGroup(middleware...)
+	notifyHandler.router = notifyHandler.registerGroup()
+	notifyHandler.regularRoutes()
+	notifyHandler.middlewareRoutes()
+	notifyHandler.registerValidator()
 }
 
-func (s *NotifyHandler) registerValidator() {
-
-}
+func (s *NotifyHandler) registerValidator() {}
