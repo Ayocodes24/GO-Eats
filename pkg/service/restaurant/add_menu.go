@@ -30,12 +30,15 @@ func (restSrv *RestaurantService) UpdateMenuPhoto(ctx context.Context, menu *res
 	client := &http.Client{}
 	downloadClient := &unsplash.DefaultHTTPImageClient{}
 	fs := &unsplash.DefaultFileSystem{}
-	menuImageURL := unsplash.GetUnSplashImageURL(client, menu.Name)
+	menuImageURL, err := unsplash.GetUnSplashImageURL(client, menu.Name)
+	if err != nil {
+		slog.Info("UnSplash failed to get image URL", "error", err)
+		return
+	}
 	imageFileName := fmt.Sprintf("menu_item_%d.jpg", menu.MenuID)
 	imageFileLocalPath := fmt.Sprintf("uploads/%s", imageFileName)
 	imageFilePath := filepath.Join(os.Getenv("LOCAL_STORAGE_PATH"), imageFileName)
-	err := unsplash.DownloadImageToDisk(downloadClient, fs, menuImageURL, imageFilePath)
-	if err != nil {
+	if err = unsplash.DownloadImageToDisk(downloadClient, fs, menuImageURL, imageFilePath); err != nil {
 		slog.Info("UnSplash Failed to Download Image", "error", err)
 	}
 

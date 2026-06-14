@@ -44,7 +44,11 @@ func main() {
 	validate := validator.New()
 
 	// Connect NATS
-	natServer, err := nats.NewNATS("nats://127.0.0.1:4222")
+	natsURL := os.Getenv("NATS_URL")
+	if natsURL == "" {
+		natsURL = "nats://127.0.0.1:4222"
+	}
+	natServer, err := nats.NewNATS(natsURL)
 
 	// WebSocket Clients
 	wsClients := make(map[string]*websocket.Conn)

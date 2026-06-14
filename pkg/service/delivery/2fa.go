@@ -3,13 +3,15 @@ package delivery
 import (
 	"context"
 	"errors"
+	"os"
+	"strconv"
+	"time"
+
 	"github.com/Ayocodes24/GO-Eats/cmd/api/middleware"
 	"github.com/Ayocodes24/GO-Eats/pkg/database/models/delivery"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/pquerna/otp/totp"
 	"log/slog"
-	"os"
-	"time"
 )
 
 func (deliverSrv *DeliveryService) GenerateTOTP(_ context.Context, phone string) (string, string, error) {
@@ -51,13 +53,21 @@ func (deliverSrv *DeliveryService) Verify(ctx context.Context, phone string, otp
 }
 
 func (deliverSrv *DeliveryService) GenerateJWT(_ context.Context, userId int64, name string) (string, error) {
+	expiryHours := 2
+	if val := os.Getenv("JWT_EXPIRY_HOURS"); val != "" {
+		if h, err := strconv.Atoi(val); err == nil && h > 0 {
+			expiryHours = h
+		}
+	}
 
-	claims := middleware.UserClaims{UserID: userId, Name: name,
+	claims := middleware.UserClaims{
+		UserID: userId,
+		Name:   name,
 		RegisteredClaims: jwt.RegisteredClaims{
-
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * time.Duration(2))),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * time.Duration(expiryHours))),
 			Issuer:    "Go_Food_Delivery",
-		}}
+		},
+	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString([]byte(os.Getenv("JWT_SECRET_KEY")))

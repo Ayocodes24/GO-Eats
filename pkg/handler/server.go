@@ -51,5 +51,9 @@ func NewServer(db database.Database, setLog bool) *Server {
 }
 
 func (server *Server) Run() error {
-	return server.Gin.Run(":8080")
+	port := os.Getenv("SERVER_PORT")
+	if port == "" {
+		port = ":8080"
+	}
+	return server.Gin.Run(port)
 }

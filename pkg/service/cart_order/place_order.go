@@ -9,7 +9,7 @@ import (
 	"github.com/Ayocodes24/GO-Eats/pkg/database/models/order"
 )
 
-func (cartSrv *CartService) PlaceOrder(ctx context.Context, cartId int64, userId int64) (*order.Order, error) {
+func (cartSrv *CartService) PlaceOrder(ctx context.Context, cartId int64, userId int64, deliveryAddress string) (*order.Order, error) {
 	var cartItems []cart.CartItems
 	var newOrder order.Order
 	var newOrderItems []order.OrderItems
@@ -30,7 +30,7 @@ func (cartSrv *CartService) PlaceOrder(ctx context.Context, cartId int64, userId
 	newOrder.UserID = userId
 	newOrder.OrderStatus = "pending"
 	newOrder.TotalAmount = orderTotal
-	newOrder.DeliveryAddress = "New Delhi"
+	newOrder.DeliveryAddress = deliveryAddress
 
 	_, err = cartSrv.db.Insert(ctx, &newOrder)
 	if err != nil {

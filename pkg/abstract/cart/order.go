@@ -7,7 +7,7 @@ import (
 )
 
 type Order interface {
-	PlaceOrder(ctx context.Context, cartId int64, userId int64) (*order.Order, error)
+	PlaceOrder(ctx context.Context, cartId int64, userId int64, deliveryAddress string) (*order.Order, error)
 	OrderList(ctx context.Context, userId int64) (*[]order.Order, error)
 	RemoveItemsFromCart(ctx context.Context, cartId int64) error
 	DeliveryInformation(ctx context.Context, orderId int64, userId int64) (*[]delivery.DeliveryListResponse, error)
