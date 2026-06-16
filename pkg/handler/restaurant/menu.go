@@ -18,12 +18,17 @@ func (s *RestaurantHandler) addMenu(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
 		return
 	}
+
+	photoAlreadySet := menuItem.Photo != ""
+
 	menuObject, err := s.service.AddMenu(ctx, &menuItem)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
-	} else {
-		// Update Photo from UnSplash
+	}
+
+	// Only call Unsplash if no photo was provided in the request
+	if !photoAlreadySet {
 		s.service.UpdateMenuPhoto(ctx, menuObject)
 	}
 
@@ -33,35 +38,30 @@ func (s *RestaurantHandler) addMenu(c *gin.Context) {
 func (s *RestaurantHandler) listMenus(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
 	defer cancel()
+
 	restaurantId := c.Query("restaurant_id")
 	if restaurantId == "" {
 		results, err := s.service.ListAllMenus(ctx)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": err.Error()})
-			return
-		}
-		c.JSON(http.StatusOK, results)
-		return
-
-	} else {
-		restaurantID, err := strconv.ParseInt(restaurantId, 10, 64)
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "Invalid RestaurantID"})
-			return
-		}
-		results, err := s.service.ListMenus(ctx, restaurantID)
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": err.Error()})
-			return
-		}
-
-		if len(results) == 0 {
-			c.JSON(http.StatusNotFound, gin.H{"error": "No results found"})
+			c.JSON(http.StatusOK, []restaurant.MenuItem{})
 			return
 		}
 		c.JSON(http.StatusOK, results)
 		return
 	}
+
+	restaurantID, err := strconv.ParseInt(restaurantId, 10, 64)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid restaurant_id"})
+		return
+	}
+
+	results, err := s.service.ListMenus(ctx, restaurantID)
+	if err != nil || len(results) == 0 {
+		c.JSON(http.StatusOK, []restaurant.MenuItem{})
+		return
+	}
+	c.JSON(http.StatusOK, results)
 }
 
 func (s *RestaurantHandler) deleteMenu(c *gin.Context) {
@@ -70,21 +70,18 @@ func (s *RestaurantHandler) deleteMenu(c *gin.Context) {
 
 	menuId, err := strconv.ParseInt(c.Param("menu_id"), 10, 64)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "Invalid MenuID"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid menu_id"})
 		return
 	}
 	restaurantId, err := strconv.ParseInt(c.Param("restaurant_id"), 10, 64)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "Invalid RestaurantID"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "Invalid restaurant_id"})
 		return
 	}
 
-	_, err = s.service.DeleteMenu(ctx, menuId, restaurantId)
-	if err != nil {
+	if _, err = s.service.DeleteMenu(ctx, menuId, restaurantId); err != nil {
 		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-
 	c.Status(http.StatusNoContent)
-
 }

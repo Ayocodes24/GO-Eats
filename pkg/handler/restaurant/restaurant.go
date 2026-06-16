@@ -17,35 +17,30 @@ func (s *RestaurantHandler) addRestaurant(c *gin.Context) {
 	defer cancel()
 	_ = ctx
 
+	var photoPath string
+
+	// File is optional — if provided, upload it; otherwise use image_url form field
 	file, fileHeader, err := c.Request.FormFile("file")
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "File is required"})
-		return
+	if err == nil {
+		newFileName := generateFileName(fileHeader.Filename)
+		if _, uploadErr := s.Serve.Storage.Upload(newFileName, file); uploadErr != nil {
+			slog.Error("addRestaurant: upload failed", "error", uploadErr)
+		}
+		photoPath = filepath.Join(os.Getenv("STORAGE_DIRECTORY"), newFileName)
+	} else {
+		photoPath = c.PostForm("image_url")
 	}
-
-	originalFileName := fileHeader.Filename
-
-	// Generate a new file name
-	newFileName := generateFileName(originalFileName)
-
-	_, err = s.Serve.Storage.Upload(newFileName, file)
-	if err != nil {
-		slog.Error("Error", "addRestaurant", err.Error())
-	}
-
-	uploadedFile := filepath.Join(os.Getenv("STORAGE_DIRECTORY"), newFileName)
 
 	var restaurant restaurantModel.Restaurant
-	restaurant.Name = c.PostForm("name")
+	restaurant.Name        = c.PostForm("name")
 	restaurant.Description = c.PostForm("description")
-	restaurant.Address = c.PostForm("address")
-	restaurant.City = c.PostForm("city")
-	restaurant.State = c.PostForm("state")
-	restaurant.Photo = uploadedFile
+	restaurant.Address     = c.PostForm("address")
+	restaurant.City        = c.PostForm("city")
+	restaurant.State       = c.PostForm("state")
+	restaurant.Photo       = photoPath
 
-	_, err = s.service.Add(ctx, &restaurant)
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": err.Error()})
+	if _, err := s.service.Add(ctx, &restaurant); err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusCreated, gin.H{"message": "Restaurant created successfully"})
@@ -56,12 +51,9 @@ func (s *RestaurantHandler) listRestaurants(c *gin.Context) {
 	defer cancel()
 
 	results, err := s.service.ListRestaurants(ctx)
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": err.Error()})
-		return
-	}
-	if results == nil {
-		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "No restaurants found"})
+	if err != nil || results == nil {
+		// Return empty array instead of 404 when no restaurants exist
+		c.JSON(http.StatusOK, []restaurantModel.Restaurant{})
 		return
 	}
 	c.JSON(http.StatusOK, results)
@@ -85,17 +77,12 @@ func (s *RestaurantHandler) deleteRestaurant(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
 	defer cancel()
 
-	restaurantId := c.Param("id")
-
-	// Convert to integer
+	restaurantId  := c.Param("id")
 	restaurantID, _ := strconv.ParseInt(restaurantId, 10, 64)
 
-	_, err := s.service.DeleteRestaurant(ctx, restaurantID)
-	if err != nil {
+	if _, err := s.service.DeleteRestaurant(ctx, restaurantID); err != nil {
 		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-
 	c.Status(http.StatusNoContent)
-
 }
