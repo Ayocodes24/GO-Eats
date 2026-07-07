@@ -1,0 +1,16 @@
+# Compiled binaries (root-level, anchored with /)
+/gateway
+/user-svc
+/restaurant-svc
+/order-svc
+/api
+
+# Build artifacts
+*.test
+*.out
+
+# Logs
+/logs/
+
+# Local storage
+uploads/

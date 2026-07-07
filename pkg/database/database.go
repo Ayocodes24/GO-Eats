@@ -35,6 +35,7 @@ type Database interface {
 	Update(ctx context.Context, tableName string, Set Filter, Condition Filter) (sql.Result, error)
 	Count(ctx context.Context, tableName string, ColumnExpression string, columnName string, parameter any) (int64, error)
 	Migrate() error
+	MigrateModels(models []interface{}) error
 	HealthCheck() bool
 	Close() error
 }
@@ -199,9 +200,7 @@ func NewTestDB() Database {
 }
 
 func (d *DB) Migrate() error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	models := []interface{}{
+	return d.MigrateModels([]interface{}{
 		(*user.User)(nil),
 		(*restaurant.Restaurant)(nil),
 		(*restaurant.MenuItem)(nil),
@@ -212,10 +211,14 @@ func (d *DB) Migrate() error {
 		(*cart.CartItems)(nil),
 		(*delivery.DeliveryPerson)(nil),
 		(*delivery.Deliveries)(nil),
-	}
+	})
+}
 
+func (d *DB) MigrateModels(models []interface{}) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 	for _, model := range models {
-		if _, err := d.db.NewCreateTable().Model(model).WithForeignKeys().IfNotExists().Exec(ctx); err != nil {
+		if _, err := d.db.NewCreateTable().Model(model).IfNotExists().Exec(ctx); err != nil {
 			return err
 		}
 	}

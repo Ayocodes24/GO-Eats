@@ -3,23 +3,24 @@ package user
 import (
 	"context"
 	"errors"
-	"github.com/Ayocodes24/GO-Eats/cmd/api/middleware"
-	"github.com/Ayocodes24/GO-Eats/pkg/database/models/user"
-	"github.com/golang-jwt/jwt/v5"
 	"log/slog"
 	"os"
 	"time"
+
+	"github.com/Ayocodes24/GO-Eats/pkg/auth"
+	"github.com/Ayocodes24/GO-Eats/pkg/database/models/user"
+	"github.com/golang-jwt/jwt/v5"
 )
 
-func (usrSrv *UsrService) Login(_ context.Context, userID int64, Name string) (string, error) {
-
-	claims := middleware.UserClaims{UserID: userID, Name: Name,
+func (usrSrv *UsrService) Login(_ context.Context, userID int64, name string) (string, error) {
+	claims := auth.UserClaims{
+		UserID: userID,
+		Name:   name,
 		RegisteredClaims: jwt.RegisteredClaims{
-
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * time.Duration(1))),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour)),
 			Issuer:    "GO-Eats",
-		}}
-
+		},
+	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString([]byte(os.Getenv("JWT_SECRET_KEY")))
 }
@@ -34,8 +35,7 @@ func (usrSrv *UsrService) UserExist(ctx context.Context, email string, recordReq
 		return false, 0, "", nil
 	}
 
-	if recordRequired == true {
-		// Fetch User Detail
+	if recordRequired {
 		var accountInfo user.User
 		err = usrSrv.db.Select(ctx, &accountInfo, "email", email)
 		if err != nil {
@@ -60,5 +60,4 @@ func (usrSrv *UsrService) ValidatePassword(ctx context.Context, userInput *user.
 		return false, errors.New("invalid password")
 	}
 	return true, nil
-
 }

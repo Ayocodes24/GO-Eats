@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package user;
+
+option go_package = "github.com/Ayocodes24/GO-Eats/pkg/proto/user;userpb";
+
+service UserService {
+  rpc ValidateToken (ValidateTokenRequest) returns (ValidateTokenResponse);
+}
+
+message ValidateTokenRequest {
+  string token = 1;
+}
+
+message ValidateTokenResponse {
+  bool   valid   = 1;
+  int64  user_id = 2;
+}
